@@ -1,1 +1,16 @@
-# mpi4py-setup-mpi
+# mpi4py/setup-mpi
+
+Set up a specific MPI implementation.
+
+Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/mpi4py/setup-mpi](https://github.com/mpi4py/setup-mpi).
+
+## Versions
+
+| Version | Tag | Upstream commit |
+|---------|-----|-----------------|
+| v1.3.6 | [`v1.3.6`](https://github.com/chainguard-actions/mpi4py-setup-mpi/tree/v1.3.6) | [`8d47800`](https://github.com/mpi4py/setup-mpi/commit/8d47800d8f19cc6426431d2dc25b027b78f1c442) |
+| v1.4.2 | [`v1.4.2`](https://github.com/chainguard-actions/mpi4py-setup-mpi/tree/v1.4.2) | [`dbbb80b`](https://github.com/mpi4py/setup-mpi/commit/dbbb80b116bea57fc1788daf7dbbf7ab3df3a0f1) |
+
+## Privacy
+
+This Action contacts Chainguard's licensing server to verify authorization. Connection metadata (IP address, GitHub repository identifier, timestamp, and any metadata encoded in the auth token) is transmitted to Chainguard, Inc. even if authorization is denied in accordance with our [Privacy Notice](https://www.chainguard.dev/legal/privacy-notice)
