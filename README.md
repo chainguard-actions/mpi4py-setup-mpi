@@ -9,6 +9,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | Version | Tag | Upstream commit |
 |---------|-----|-----------------|
 | v1.3.6 | [`v1.3.6`](https://github.com/chainguard-actions/mpi4py-setup-mpi/tree/v1.3.6) | [`8d47800`](https://github.com/mpi4py/setup-mpi/commit/8d47800d8f19cc6426431d2dc25b027b78f1c442) |
+| v1.4.0 | [`v1.4.0`](https://github.com/chainguard-actions/mpi4py-setup-mpi/tree/v1.4.0) | [`d0a3bf1`](https://github.com/mpi4py/setup-mpi/commit/d0a3bf17a182b37921ff27a6737f9009ec76d3b6) |
 | v1.4.2 | [`v1.4.2`](https://github.com/chainguard-actions/mpi4py-setup-mpi/tree/v1.4.2) | [`dbbb80b`](https://github.com/mpi4py/setup-mpi/commit/dbbb80b116bea57fc1788daf7dbbf7ab3df3a0f1) |
 
 ## Privacy
