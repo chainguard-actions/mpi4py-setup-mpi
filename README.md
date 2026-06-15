@@ -1,16 +1,56 @@
-# mpi4py/setup-mpi
+# setup-mpi
 
-Set up a specific MPI implementation.
+Set up your GitHub Actions workflow to use [MPI](https://www.mpi-forum.org/).
 
-Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at [https://github.com/mpi4py/setup-mpi](https://github.com/mpi4py/setup-mpi).
+# Usage
 
-## Versions
+See [action.yml](action.yml)
 
-| Version | Tag | Upstream commit |
-|---------|-----|-----------------|
-| v1.3.6 | [`v1.3.6`](https://github.com/chainguard-actions/mpi4py-setup-mpi/tree/v1.3.6) | [`8d47800`](https://github.com/mpi4py/setup-mpi/commit/8d47800d8f19cc6426431d2dc25b027b78f1c442) |
-| v1.4.0 | [`v1.4.0`](https://github.com/chainguard-actions/mpi4py-setup-mpi/tree/v1.4.0) | [`d0a3bf1`](https://github.com/mpi4py/setup-mpi/commit/d0a3bf17a182b37921ff27a6737f9009ec76d3b6) |
-| v1.4.2 | [`v1.4.2`](https://github.com/chainguard-actions/mpi4py-setup-mpi/tree/v1.4.2) | [`dbbb80b`](https://github.com/mpi4py/setup-mpi/commit/dbbb80b116bea57fc1788daf7dbbf7ab3df3a0f1) |
+Basic:
+
+```yaml
+steps:
+  - uses: actions/checkout@v4
+  - uses: mpi4py/setup-mpi@v1
+  - run: mpicc helloworld.c -o helloworld
+  - run: mpiexec -n 2 ./helloworld
+```
+
+Matrix Testing:
+
+```yaml
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        mpi: [ 'mpich', 'openmpi', 'intelmpi']
+    name: ${{ matrix.mpi }} example
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup MPI
+        uses: mpi4py/setup-mpi@v1
+        with:
+          mpi: ${{ matrix.mpi }}
+      - run: mpicc helloworld.c -o helloworld
+      - run: mpiexec -n 2 ./helloworld
+```
+
+# Available MPI implementations
+
+* Linux:
+  [MPICH](https://www.mpich.org/),
+  [Open MPI](https://www.open-mpi.org/), and
+  [Intel MPI](https://software.intel.com/intel-mpi-library) (`apt` install).
+
+* macOS:
+  [MPICH](https://www.mpich.org/) and
+  [Open MPI](https://www.open-mpi.org/) (`brew` install).
+
+* Windows:
+  [Microsoft MPI](https://docs.microsoft.com/en-us/message-passing-interface/microsoft-mpi) and
+  [Intel MPI](https://software.intel.com/intel-mpi-library).
 
 ## Privacy
 
