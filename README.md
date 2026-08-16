@@ -13,6 +13,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | v1.4.1 | [`v1.4.1`](https://github.com/chainguard-actions/mpi4py-setup-mpi/tree/v1.4.1) | [`8ac56ec`](https://github.com/mpi4py/setup-mpi/commit/8ac56ec7ab12f2dffdcf55ffaf50f1920ebcc004) |
 | v1.4.2 | [`v1.4.2`](https://github.com/chainguard-actions/mpi4py-setup-mpi/tree/v1.4.2) | [`dbbb80b`](https://github.com/mpi4py/setup-mpi/commit/dbbb80b116bea57fc1788daf7dbbf7ab3df3a0f1) |
 | v1.4.3 | [`v1.4.3`](https://github.com/chainguard-actions/mpi4py-setup-mpi/tree/v1.4.3) | [`f200dce`](https://github.com/mpi4py/setup-mpi/commit/f200dce75b64188be849b46657dcf86c721937b2) |
+| v1.4.4 | [`v1.4.4`](https://github.com/chainguard-actions/mpi4py-setup-mpi/tree/v1.4.4) | [`3417e34`](https://github.com/mpi4py/setup-mpi/commit/3417e34f1394a16723d7913c236642c24e95fd5a) |
 
 ## Privacy
 
