@@ -1,0 +1,37 @@
+name: Test MPICH installation
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: setup-mpi
+        uses: .
+        with:
+          mpi: mpich
+      - name: Assert output mpi equals mpich
+        env:
+          ACTUAL: ${{ steps.setup-mpi.outputs.mpi }}
+        run: |
+          echo "actual: $ACTUAL"
+          if [ "$ACTUAL" != "mpich" ]; then
+            echo "FAIL: expected 'mpich' but got '$ACTUAL'"
+            exit 1
+          fi
+          echo "PASS"
+      - name: Assert mpicc is available
+        run: |
+          if ! command -v mpicc > /dev/null 2>&1; then
+            echo "FAIL: mpicc not found in PATH"
+            exit 1
+          fi
+          echo "PASS: mpicc found at $(command -v mpicc)"
+      - name: Assert mpichversion is available
+        run: |
+          if ! command -v mpichversion > /dev/null 2>&1; then
+            echo "FAIL: mpichversion not found in PATH"
+            exit 1
+          fi
+          mpichversion
+          echo "PASS"

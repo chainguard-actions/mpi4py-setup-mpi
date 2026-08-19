@@ -1,0 +1,26 @@
+name: Test ompi alias normalizes to openmpi
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: setup-mpi
+        uses: .
+        with:
+          mpi: ompi
+      - name: Assert output mpi=openmpi (alias normalized)
+        env:
+          ACTUAL: ${{ steps.setup-mpi.outputs.mpi }}
+        run: |
+          echo "actual: $ACTUAL"
+          if [ "$ACTUAL" != "openmpi" ]; then
+            echo "FAIL: expected 'openmpi' (alias 'ompi' normalized) but got '$ACTUAL'"
+            exit 1
+          fi
+          echo "PASS"
+      - name: Assert mpicc is available
+        run: |
+          which mpicc || { echo "FAIL: mpicc not found on PATH"; exit 1; }
+          echo "PASS: mpicc found at $(which mpicc)"
