@@ -1,0 +1,59 @@
+name: Test OpenMPI installation
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: setup-mpi
+        uses: .
+        with:
+          mpi: openmpi
+      - name: Assert output mpi is openmpi
+        env:
+          ACTUAL: ${{ steps.setup-mpi.outputs.mpi }}
+        run: |
+          echo "actual: $ACTUAL"
+          if [ "$ACTUAL" != "openmpi" ]; then
+            echo "FAIL: expected 'openmpi' but got '$ACTUAL'"
+            exit 1
+          fi
+          echo "PASS"
+      - name: Assert mpiexec is available
+        run: |
+          if ! command -v mpiexec > /dev/null 2>&1; then
+            echo "FAIL: mpiexec not found in PATH"
+            exit 1
+          fi
+          echo "PASS: mpiexec found at $(command -v mpiexec)"
+      - name: Assert ompi_info is available
+        run: |
+          if ! command -v ompi_info > /dev/null 2>&1; then
+            echo "FAIL: ompi_info not found in PATH"
+            exit 1
+          fi
+          echo "PASS: ompi_info found at $(command -v ompi_info)"
+          ompi_info --version
+      - name: Assert mpicc compiler wrapper is available
+        run: |
+          if ! command -v mpicc > /dev/null 2>&1; then
+            echo "FAIL: mpicc not found in PATH"
+            exit 1
+          fi
+          echo "PASS: mpicc found at $(command -v mpicc)"
+      - name: Assert OpenMPI MCA params are configured
+        run: |
+          openmpi_mca_params="$HOME/.openmpi/mca-params.conf"
+          if [ ! -f "$openmpi_mca_params" ]; then
+            echo "FAIL: OpenMPI MCA params file not found at $openmpi_mca_params"
+            exit 1
+          fi
+          echo "PASS: MCA params file exists"
+          cat "$openmpi_mca_params"
+          # Verify oversubscribe is configured
+          if ! grep -q "rmaps_base_oversubscribe" "$openmpi_mca_params"; then
+            echo "FAIL: rmaps_base_oversubscribe not found in MCA params"
+            exit 1
+          fi
+          echo "PASS: rmaps_base_oversubscribe is configured"

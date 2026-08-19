@@ -70,12 +70,18 @@ setup-env-intel-oneapi () {
     set +u
     source /opt/intel/oneapi/setvars.sh
     set -u
-    echo "${I_MPI_ROOT}/bin" >> $GITHUB_PATH
-    echo "ONEAPI_ROOT=${ONEAPI_ROOT}" >> $GITHUB_ENV
-    echo "I_MPI_ROOT=${I_MPI_ROOT}" >> $GITHUB_ENV
-    echo "FI_PROVIDER_PATH=${FI_PROVIDER_PATH}" >> $GITHUB_ENV
-    echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> $GITHUB_ENV
-    echo "PKG_CONFIG_PATH=${PKG_CONFIG_PATH}" >> $GITHUB_ENV
+    safe_I_MPI_ROOT_bin=$(printf '%s' "${I_MPI_ROOT}/bin" | tr -d '\n\r')
+    safe_ONEAPI_ROOT=$(printf '%s' "${ONEAPI_ROOT}" | tr -d '\n\r')
+    safe_I_MPI_ROOT=$(printf '%s' "${I_MPI_ROOT}" | tr -d '\n\r')
+    safe_FI_PROVIDER_PATH=$(printf '%s' "${FI_PROVIDER_PATH}" | tr -d '\n\r')
+    safe_LD_LIBRARY_PATH=$(printf '%s' "${LD_LIBRARY_PATH}" | tr -d '\n\r')
+    safe_PKG_CONFIG_PATH=$(printf '%s' "${PKG_CONFIG_PATH}" | tr -d '\n\r')
+    echo "${safe_I_MPI_ROOT_bin}" >> "$GITHUB_PATH"
+    echo "ONEAPI_ROOT=${safe_ONEAPI_ROOT}" >> "$GITHUB_ENV"
+    echo "I_MPI_ROOT=${safe_I_MPI_ROOT}" >> "$GITHUB_ENV"
+    echo "FI_PROVIDER_PATH=${safe_FI_PROVIDER_PATH}" >> "$GITHUB_ENV"
+    echo "LD_LIBRARY_PATH=${safe_LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
+    echo "PKG_CONFIG_PATH=${safe_PKG_CONFIG_PATH}" >> "$GITHUB_ENV"
 }
 
 setup-win-intel-oneapi-mpi () {
@@ -116,11 +122,17 @@ setup-win-intel-oneapi-mpi-env () {
     mpibindir="${I_MPI_ROOT}\bin"
     ofibindir="${I_MPI_ROOT}\opt\mpi\libfabric\bin"
 
-    echo "ONEAPI_ROOT=${ONEAPI_ROOT}" >> $GITHUB_ENV
-    echo "I_MPI_ROOT=${I_MPI_ROOT}" >> $GITHUB_ENV
-    echo "I_MPI_OFI_LIBRARY_INTERNAL=${I_MPI_OFI_LIBRARY_INTERNAL}" >> $GITHUB_ENV
-    echo "${mpibindir}" >> $GITHUB_PATH
-    echo "${ofibindir}" >> $GITHUB_PATH
+    safe_ONEAPI_ROOT=$(printf '%s' "${ONEAPI_ROOT}" | tr -d '\n\r')
+    safe_I_MPI_ROOT=$(printf '%s' "${I_MPI_ROOT}" | tr -d '\n\r')
+    safe_I_MPI_OFI_LIBRARY_INTERNAL=$(printf '%s' "${I_MPI_OFI_LIBRARY_INTERNAL}" | tr -d '\n\r')
+    safe_mpibindir=$(printf '%s' "${mpibindir}" | tr -d '\n\r')
+    safe_ofibindir=$(printf '%s' "${ofibindir}" | tr -d '\n\r')
+
+    echo "ONEAPI_ROOT=${safe_ONEAPI_ROOT}" >> "$GITHUB_ENV"
+    echo "I_MPI_ROOT=${safe_I_MPI_ROOT}" >> "$GITHUB_ENV"
+    echo "I_MPI_OFI_LIBRARY_INTERNAL=${safe_I_MPI_OFI_LIBRARY_INTERNAL}" >> "$GITHUB_ENV"
+    echo "${safe_mpibindir}" >> "$GITHUB_PATH"
+    echo "${safe_ofibindir}" >> "$GITHUB_PATH"
 
     export PATH="$(cygpath -u "${mpibindir}"):$PATH"
     export PATH="$(cygpath -u "${ofibindir}"):$PATH"
@@ -202,7 +214,8 @@ case $(uname) in
         ;;
 esac
 
-echo "mpi=${MPI}" >> $GITHUB_OUTPUT
+safe_MPI=$(printf '%s' "${MPI}" | tr -d '\n\r')
+echo "mpi=${safe_MPI}" >> "$GITHUB_OUTPUT"
 
 case $MPI in
     mpich)

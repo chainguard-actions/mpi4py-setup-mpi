@@ -1,0 +1,55 @@
+name: Test MPI name aliases and case normalization
+on:
+  workflow_dispatch:
+jobs:
+  test-ompi-alias:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: setup-mpi
+        uses: .
+        with:
+          mpi: ompi  # alias for openmpi
+      - name: Assert output mpi is openmpi (from ompi alias)
+        env:
+          ACTUAL: ${{ steps.setup-mpi.outputs.mpi }}
+        run: |
+          echo "actual: $ACTUAL"
+          if [ "$ACTUAL" != "openmpi" ]; then
+            echo "FAIL: expected 'openmpi' but got '$ACTUAL'"
+            exit 1
+          fi
+          echo "PASS: 'ompi' alias correctly resolved to 'openmpi'"
+      - name: Assert mpiexec is available
+        run: |
+          if ! command -v mpiexec > /dev/null 2>&1; then
+            echo "FAIL: mpiexec not found in PATH"
+            exit 1
+          fi
+          echo "PASS: mpiexec found at $(command -v mpiexec)"
+
+  test-uppercase-mpich:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: setup-mpi
+        uses: .
+        with:
+          mpi: MPICH  # uppercase — should be normalized to lowercase
+      - name: Assert output mpi is mpich (case normalized)
+        env:
+          ACTUAL: ${{ steps.setup-mpi.outputs.mpi }}
+        run: |
+          echo "actual: $ACTUAL"
+          if [ "$ACTUAL" != "mpich" ]; then
+            echo "FAIL: expected 'mpich' but got '$ACTUAL'"
+            exit 1
+          fi
+          echo "PASS: 'MPICH' correctly normalized to 'mpich'"
+      - name: Assert mpiexec is available
+        run: |
+          if ! command -v mpiexec > /dev/null 2>&1; then
+            echo "FAIL: mpiexec not found in PATH"
+            exit 1
+          fi
+          echo "PASS: mpiexec found at $(command -v mpiexec)"

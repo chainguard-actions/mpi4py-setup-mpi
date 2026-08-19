@@ -1,0 +1,40 @@
+name: Test compile and run MPI Hello World
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: setup-mpi
+        uses: .
+        with:
+          mpi: mpich
+      - name: Assert output mpi is mpich
+        env:
+          ACTUAL: ${{ steps.setup-mpi.outputs.mpi }}
+        run: |
+          echo "actual: $ACTUAL"
+          if [ "$ACTUAL" != "mpich" ]; then
+            echo "FAIL: expected 'mpich' but got '$ACTUAL'"
+            exit 1
+          fi
+          echo "PASS"
+      - name: Compile MPI Hello World
+        run: |
+          mpicc -o helloworld helloworld.c
+          if [ ! -f helloworld ]; then
+            echo "FAIL: helloworld binary not produced"
+            exit 1
+          fi
+          echo "PASS: helloworld compiled successfully"
+      - name: Run MPI Hello World with 2 processes
+        run: |
+          output=$(mpiexec -n 2 ./helloworld 2>&1)
+          echo "output: $output"
+          # Check that we got output from 2 processes (rank 0 and rank 1)
+          if ! echo "$output" | grep -q "Hello, World!"; then
+            echo "FAIL: expected 'Hello, World!' in output"
+            exit 1
+          fi
+          echo "PASS: MPI Hello World ran successfully"
