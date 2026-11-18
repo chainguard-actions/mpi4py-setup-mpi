@@ -1,3 +1,4 @@
+---
 name: 'Setup MPI'
 description: 'Set up a specific MPI implementation.'
 author: 'Lisandro Dalcin'
@@ -5,7 +6,7 @@ inputs:
   mpi:
     description: "MPI implementation name."
     required: false
-    default: '' # Linux/macOS: 'mpich', Windows: 'msmpi'
+    default: ''  # Linux/macOS: 'mpich', Windows: 'msmpi'
 outputs:
   mpi:
     description: "The installed MPI implementation name."
