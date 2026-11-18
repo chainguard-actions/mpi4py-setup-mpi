@@ -4,7 +4,7 @@
 
 > This file was generated automatically by the hardening agent.
 
-**Policy SHA:** `d636be7e43ef829af6e853da6b3c7566db9f72fe`
+**Policy SHA:** `374911c4be584df24e6da57af2d990570ef0f859`
 
 **Test Policy SHA:** `843adf9e4b8f85d0c08b27b9d0b09dd094b54702`
 
@@ -14,44 +14,9 @@ Action **mpi4py--setup-mpi/v1.4.4** was hardened automatically. 3 finding(s) wer
 
 ## Findings Fixed
 
-### unpinned-uses (severity: high)
-
-Multiple `uses:` references in .github/workflows/ci.yml use mutable tag-based refs instead of pinned 40-character SHA commit digests, making the workflow vulnerable to supply-chain attacks if the referenced action tags are moved. Failing references include: `actions/checkout@v7`, `actions/setup-python@v6`, `step-security/harden-runner@v2` (used in multiple jobs).
-
-Locations:
-
-- `.github/workflows/ci.yml:22`
-- `.github/workflows/ci.yml:25`
-- `.github/workflows/ci.yml:57`
-- `.github/workflows/ci.yml:62`
-
-### script-injection (severity: high)
-
-Multiple `run:` blocks in ci.yml directly interpolate `${{ steps.*.outputs.mpi }}` (a `steps.*.outputs.*` context value) into shell commands without routing through an `env:` variable. This allows an attacker who can influence the step output to inject arbitrary shell commands. Offending lines include:
-- `run: echo "${{ steps.setup-mpi.outputs.mpi }}"` (test job, sub-rule a)
-- `run: test ${{ steps.setup1.outputs.mpi }} == mpich` and similar (Linux, container, macOS, Windows jobs, sub-rule a)
-- `run: ${{ !(contains(needs.*.result, 'failure')) }}` in ci-status job — the entire shell command is a `${{ }}` expression (sub-rule a)
-
-Locations:
-
-- `.github/workflows/ci.yml:71`
-- `.github/workflows/ci.yml:100`
-- `.github/workflows/ci.yml:107`
-- `.github/workflows/ci.yml:114`
-- `.github/workflows/ci.yml:155`
-- `.github/workflows/ci.yml:162`
-- `.github/workflows/ci.yml:169`
-- `.github/workflows/ci.yml:209`
-- `.github/workflows/ci.yml:216`
-- `.github/workflows/ci.yml:247`
-- `.github/workflows/ci.yml:254`
-- `.github/workflows/ci.yml:285`
-- `.github/workflows/ci.yml:287`
-- `.github/workflows/ci.yml:302`
-
 ### github-env-injection (severity: high)
 
-In setup-mpi.sh, multiple inherited process environment variables are written to $GITHUB_ENV and $GITHUB_PATH without the required sanitization step (`printf '%s' ... | tr -d '\n\r'`). A calling workflow can set these env vars to values containing newlines, enabling injection of arbitrary environment variables:
+Carried forward from this version's previous harden, which fixed it; fix it again unless the code no longer has the problem. In setup-mpi.sh, multiple inherited process environment variables are written to $GITHUB_ENV and $GITHUB_PATH without the required sanitization step (`printf '%s' ... | tr -d '\n\r'`). A calling workflow can set these env vars to values containing newlines, enabling injection of arbitrary environment variables:
 1. `setup-env-intel-oneapi()`: writes `${I_MPI_ROOT}/bin` to $GITHUB_PATH and `ONEAPI_ROOT`, `I_MPI_ROOT`, `FI_PROVIDER_PATH`, `LD_LIBRARY_PATH`, `PKG_CONFIG_PATH` to $GITHUB_ENV — all sourced from the inherited environment after `source setvars.sh`.
 2. `setup-win-intel-oneapi-mpi-env()`: writes `${ONEAPI_ROOT}`, `${I_MPI_ROOT}`, `${I_MPI_OFI_LIBRARY_INTERNAL}`, `${mpibindir}`, `${ofibindir}` to $GITHUB_ENV/$GITHUB_PATH without sanitization.
 3. Final `echo "mpi=${MPI}" >> "$GITHUB_OUTPUT"`: writes `$MPI` (derived from `inputs.mpi` via `$1`) to $GITHUB_OUTPUT without sanitization.
@@ -71,19 +36,112 @@ Locations:
 - `setup-mpi.sh:111`
 - `setup-mpi.sh:196`
 
+### prior-fix (severity: high)
+
+Carried forward from this version's previous harden, which fixed it; fix it again unless the code no longer has the problem. The previous harden changed action.yml without recording a finding for it, and this analysis reported nothing there. Re-apply its security changes unless the code no longer needs them. The previous patch:
+```diff
+diff --git a/action.yml b/action.yml
+index 060d743..568f07a 100644
+--- a/action.yml
++++ b/action.yml
+@@ -1,4 +1,3 @@
+----
+ name: 'Setup MPI'
+ description: 'Set up a specific MPI implementation.'
+ author: 'Lisandro Dalcin'
+@@ -6,7 +5,7 @@ inputs:
+   mpi:
+     description: "MPI implementation name."
+     required: false
+-    default: ''  # Linux/macOS: 'mpich', Windows: 'msmpi'
++    default: '' # Linux/macOS: 'mpich', Windows: 'msmpi'
+ outputs:
+   mpi:
+     description: "The installed MPI implementation name."
+@@ -14,6 +13,23 @@ outputs:
+ runs:
+   using: 'composite'
+   steps:
+     - id: setup-mpi
+       run: ${GITHUB_ACTION_PATH}/setup-mpi.sh "$MPI"
+       shell: bash
+
+```
+
+Locations:
+
+- `action.yml`
+
+### prior-fix (severity: high)
+
+Carried forward from this version's previous harden, which fixed it; fix it again unless the code no longer has the problem. The previous harden changed setup-mpi.sh without recording a finding for it, and this analysis reported nothing there. Re-apply its security changes unless the code no longer needs them. The previous patch:
+```diff
+diff --git a/setup-mpi.sh b/setup-mpi.sh
+index f948ecf..7606ffd 100755
+--- a/setup-mpi.sh
++++ b/setup-mpi.sh
+@@ -71,12 +71,13 @@ setup-env-intel-oneapi () {
+     set +u
+     source /opt/intel/oneapi/setvars.sh
+     set -u
+-    echo "${I_MPI_ROOT}/bin" >> "$GITHUB_PATH"
+-    echo "ONEAPI_ROOT=${ONEAPI_ROOT}" >> "$GITHUB_ENV"
+-    echo "I_MPI_ROOT=${I_MPI_ROOT}" >> "$GITHUB_ENV"
+-    echo "FI_PROVIDER_PATH=${FI_PROVIDER_PATH}" >> "$GITHUB_ENV"
+-    echo "LD_LIBRARY_PATH=${LD_LIBRARY_PATH}" >> "$GITHUB_ENV"
+-    echo "PKG_CONFIG_PATH=${PKG_CONFIG_PATH}" >> "$GITHUB_ENV"
++    printf '%s' "${I_MPI_ROOT}/bin" | tr -d '\n\r' >> "$GITHUB_PATH"
++    printf '\n' >> "$GITHUB_PATH"
++    printf 'ONEAPI_ROOT=%s\n' "$(printf '%s' "${ONEAPI_ROOT}" | tr -d '\n\r')" >> "$GITHUB_ENV"
++    printf 'I_MPI_ROOT=%s\n' "$(printf '%s' "${I_MPI_ROOT}" | tr -d '\n\r')" >> "$GITHUB_ENV"
++    printf 'FI_PROVIDER_PATH=%s\n' "$(printf '%s' "${FI_PROVIDER_PATH}" | tr -d '\n\r')" >> "$GITHUB_ENV"
++    printf 'LD_LIBRARY_PATH=%s\n' "$(printf '%s' "${LD_LIBRARY_PATH}" | tr -d '\n\r')" >> "$GITHUB_ENV"
++    printf 'PKG_CONFIG_PATH=%s\n' "$(printf '%s' "${PKG_CONFIG_PATH}" | tr -d '\n\r')" >> "$GITHUB_ENV"
+ }
+ 
+ setup-win-intel-oneapi-mpi () {
+@@ -121,11 +122,13 @@ setup-win-intel-oneapi-mpi-env () {
+     mpibindir="${I_MPI_ROOT}\bin"
+     ofibindir="${I_MPI_ROOT}\opt\mpi\libfabric\bin"
+ 
+-    echo "ONEAPI_ROOT=${ONEAPI_ROOT}" >> "$GITHUB_ENV"
+-    echo "I_MPI_ROOT=${I_MPI_ROOT}" >> "$GITHUB_ENV"
+-    echo "I_MPI_OFI_LIBRARY_INTERNAL=${I_MPI_OFI_LIBRARY_INTERNAL}" >> "$GITHUB_ENV"
+-    echo "${mpibindir}" >> "$GITHUB_PATH"
+-    echo "${ofibindir}" >> "$GITHUB_PATH"
++    printf 'ONEAPI_ROOT=%s\n' "$(printf '%s' "${ONEAPI_ROOT}" | tr -d '\n\r')" >> "$GITHUB_ENV"
++    printf 'I_MPI_ROOT=%s\n' "$(printf '%s' "${I_MPI_ROOT}" | tr -d '\n\r')" >> "$GITHUB_ENV"
++    printf 'I_MPI_OFI_LIBRARY_INTERNAL=%s\n' "$(printf '%s' "${I_MPI_OFI_LIBRARY_INTERNAL}" | tr -d '\n\r')" >> "$GITHUB_ENV"
++    printf '%s' "${mpibindir}" | tr -d '\n\r' >> "$GITHUB_PATH"
++    printf '\n' >> "$GITHUB_PATH"
++    printf '%s' "${ofibindir}" | tr -d '\n\r' >> "$GITHUB_PATH"
++    printf '\n' >> "$GITHUB_PATH"
+ 
+     PATH="$(cygpath -u "${mpibindir}"):$PATH"
+     PATH="$(cygpath -u "${ofibindir}"):$PATH"
+@@ -208,7 +211,7 @@ case "$(uname)" in
+         ;;
+ esac
+ 
+-echo "mpi=${MPI}" >> "$GITHUB_OUTPUT"
++printf 'mpi=%s\n' "$(printf '%s' "${MPI}" | tr -d '\n\r')" >> "$GITHUB_OUTPUT"
+ 
+ case "$MPI" in
+     mpich)
+
+```
+
+Locations:
+
+- `setup-mpi.sh`
+
 ## Iteration Notes
 
 ### Iteration 1
 
-**Fixes applied:** unpinned-uses, script-injection, github-env-injection
+**Fixes applied:** github-env-injection, prior-fix
 
 **Notes:**
 
-Fixed all three findings:
-
-1. unpinned-uses: Pinned all action references in .github/workflows/ci.yml to full 40-char SHAs: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 (v7), actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 (v6), step-security/harden-runner@05e31511f85b41b11d1cf0ef85d0992719546e2c (v2).
-
-2. script-injection: Moved all ${{ steps.*.outputs.mpi }} expressions out of run: blocks into env: blocks, referencing them as $SETUP1_MPI, $SETUP2_MPI, etc. The ci-status job's run: ${{ !(contains(needs.*.result, 'failure')) }} was replaced with an env var NEEDS_RESULT and a proper shell conditional.
-
-3. github-env-injection: In setup-mpi.sh, all writes to $GITHUB_ENV, $GITHUB_PATH, and $GITHUB_OUTPUT now use printf '%s' "$VAR" | tr -d '\n\r' to strip newlines before writing, preventing injection of arbitrary environment variables.
+I fixed the newline-injection finding in setup-mpi.sh again. Every value the script writes to GITHUB_ENV, GITHUB_PATH and GITHUB_OUTPUT now goes through printf '%s' "$VAR" | tr -d '\n\r' first. That covers the Intel oneAPI variables on Linux, the Intel MPI variables and bin directories on Windows, and the final mpi= output. The values are plain variables rather than command output, so the sanitizing step can't hide a failed command. I didn't change action.yml: it already passes inputs.mpi to the script through env (MPI) and quotes it as "$MPI" in run, which is the security part of the earlier patch. The rest of that earlier patch only removed the leading '---' line and changed comment spacing, so I left those out. Nothing was run or tested.
 

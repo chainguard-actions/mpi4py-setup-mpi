@@ -71,8 +71,7 @@ setup-env-intel-oneapi () {
     set +u
     source /opt/intel/oneapi/setvars.sh
     set -u
-    printf '%s' "${I_MPI_ROOT}/bin" | tr -d '\n\r' >> "$GITHUB_PATH"
-    printf '\n' >> "$GITHUB_PATH"
+    printf '%s\n' "$(printf '%s' "${I_MPI_ROOT}/bin" | tr -d '\n\r')" >> "$GITHUB_PATH"
     printf 'ONEAPI_ROOT=%s\n' "$(printf '%s' "${ONEAPI_ROOT}" | tr -d '\n\r')" >> "$GITHUB_ENV"
     printf 'I_MPI_ROOT=%s\n' "$(printf '%s' "${I_MPI_ROOT}" | tr -d '\n\r')" >> "$GITHUB_ENV"
     printf 'FI_PROVIDER_PATH=%s\n' "$(printf '%s' "${FI_PROVIDER_PATH}" | tr -d '\n\r')" >> "$GITHUB_ENV"
@@ -125,10 +124,8 @@ setup-win-intel-oneapi-mpi-env () {
     printf 'ONEAPI_ROOT=%s\n' "$(printf '%s' "${ONEAPI_ROOT}" | tr -d '\n\r')" >> "$GITHUB_ENV"
     printf 'I_MPI_ROOT=%s\n' "$(printf '%s' "${I_MPI_ROOT}" | tr -d '\n\r')" >> "$GITHUB_ENV"
     printf 'I_MPI_OFI_LIBRARY_INTERNAL=%s\n' "$(printf '%s' "${I_MPI_OFI_LIBRARY_INTERNAL}" | tr -d '\n\r')" >> "$GITHUB_ENV"
-    printf '%s' "${mpibindir}" | tr -d '\n\r' >> "$GITHUB_PATH"
-    printf '\n' >> "$GITHUB_PATH"
-    printf '%s' "${ofibindir}" | tr -d '\n\r' >> "$GITHUB_PATH"
-    printf '\n' >> "$GITHUB_PATH"
+    printf '%s\n' "$(printf '%s' "${mpibindir}" | tr -d '\n\r')" >> "$GITHUB_PATH"
+    printf '%s\n' "$(printf '%s' "${ofibindir}" | tr -d '\n\r')" >> "$GITHUB_PATH"
 
     PATH="$(cygpath -u "${mpibindir}"):$PATH"
     PATH="$(cygpath -u "${ofibindir}"):$PATH"
