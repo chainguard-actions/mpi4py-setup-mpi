@@ -1,3 +1,4 @@
+---
 name: 'Setup MPI'
 description: 'Set up a specific MPI implementation.'
 author: 'Lisandro Dalcin'
